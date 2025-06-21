@@ -216,7 +216,14 @@ $(document).ready(function(){
 <font color="white">
     &copy;
       2017-<?php echo date("Y"); ?>
-       <?=$settings->copyright; ?><br><?php function getUserIpAddr(){
+       <?=$settings->copyright; ?><br>
+    
+    <!-- RDP Data Center Acquisition Notice -->
+    <div style="margin-top: 10px;">
+        <a href="https://rdpdatacenter.in" target="_blank" style="color: #f95169; text-decoration: none;" title="RDP Data Center - Web Hosting & Cloud Services">RDP Datacenter</a> has acquired Codevizag Academy
+    </div>
+    
+    <?php function getUserIpAddr(){
     if(!empty($_SERVER['HTTP_CLIENT_IP'])){
         //ip from share internet
         $ip = $_SERVER['HTTP_CLIENT_IP'];
@@ -244,7 +251,7 @@ if (isset($data_object->asn)) {
     $asn = $data_object->asn;
     $company = $data_object->company;
     // Display specific information from the 'asn' object
-    echo "<b>For Security Purposes We Store Your Internet Protocol Address (IP Address).<br>";
+    echo "<br><b>For Security Purposes We Store Your Internet Protocol Address (IP Address).<br>";
     echo "Your ISP is ".$company->name." (AS".$asn->asn.")."; 
 } else {
     echo "ASN Information not found in the API response.";
