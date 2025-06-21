@@ -213,50 +213,63 @@ $(document).ready(function(){
         <div class="col-md-12">
           <div class="copyright-text">
 
-<font color="white">
+          <font color="white">
     &copy;
       2017-<?php echo date("Y"); ?>
        <?=$settings->copyright; ?><br>
     
     <!-- RDP Data Center Acquisition Notice -->
-    <div style="margin-top: 10px;">
-        <a href="https://rdpdatacenter.in" target="_blank" style="color: #f95169; text-decoration: none;" title="RDP Data Center - Web Hosting & Cloud Services">RDP Datacenter</a> has acquired Codevizag Academy
-    </div>
+        <a href="https://rdpdatacenter.in" target="_blank" style="color: #f95169; text-decoration: none;" title="RDP Data Center - Web Hosting & Cloud Services">RDP Data Center</a> has acquired Codevizag Academy
     
-    <?php function getUserIpAddr(){
-    if(!empty($_SERVER['HTTP_CLIENT_IP'])){
-        //ip from share internet
-        $ip = $_SERVER['HTTP_CLIENT_IP'];
-    }elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR'])){
-        //ip pass from proxy
-        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-    }else{
-        $ip = $_SERVER['REMOTE_ADDR'];
+        <?php 
+    function getUserIpAddr(){
+        if(!empty($_SERVER['HTTP_CLIENT_IP'])){
+            //ip from share internet
+            $ip = $_SERVER['HTTP_CLIENT_IP'];
+        }elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR'])){
+            //ip pass from proxy
+            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        }else{
+            $ip = $_SERVER['REMOTE_ADDR'];
+        }
+        return $ip;
     }
-    return $ip;
-}
-gethostbyaddr($_SERVER['REMOTE_ADDR']);
 
-// API URL for IPAPI.is
-$api_url = 'https://api.ipapi.is/?q=' .getUserIpAddr();
-
-// Fetch JSON data from the API URL
-$json_data = file_get_contents($api_url);
-
-// Decode JSON data into a PHP object
-$data_object = json_decode($json_data);
-
-// Check if the 'asn' object exists in the JSON response
-if (isset($data_object->asn)) {
-    $asn = $data_object->asn;
-    $company = $data_object->company;
-    // Display specific information from the 'asn' object
-    echo "<br><b>For Security Purposes We Store Your Internet Protocol Address (IP Address).<br>";
-    echo "Your ISP is ".$company->name." (AS".$asn->asn.")."; 
-} else {
-    echo "ASN Information not found in the API response.";
-}
-?></font>
+    $user_ip = getUserIpAddr();
+    
+    // Use freeipapi.com for ISP information
+    $api_url = 'https://free.freeipapi.com/api/json/' . $user_ip;
+    
+    // Use cURL for better error handling
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $api_url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5); // 5 second timeout
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // For HTTPS compatibility
+    
+    $json_data = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($json_data && $http_code == 200) {
+        $data_object = json_decode($json_data);
+        
+        if ($data_object && isset($data_object->asn) && isset($data_object->asnOrganization)) {
+            echo "<br><b>For Security Purposes We Store Your Internet Protocol Address: " . $user_ip . "<br>";
+            echo "Your ISP is " . $data_object->asnOrganization . " (AS" . $data_object->asn . ").</b>";
+        } else {
+            // Fallback if API response is incomplete
+            echo "<br><b>For Security Purposes We Store Your Internet Protocol Address: " . $user_ip . "<br>";
+            echo "ISP information temporarily unavailable.</b>";
+        }
+    } else {
+        // Fallback if API fails
+        echo "<br><b>For Security Purposes We Store Your Internet Protocol Address: " . $user_ip . "<br>";
+        echo "ISP information temporarily unavailable.</b>";
+    }
+    ?>
+</font>
   </div>
           </div>
         </div>
